@@ -88,14 +88,27 @@ planetData.forEach(d => {
   scene.add(orbitLine);
 });
 
-// 7. 渲染循环（第三步加入公转动画）
+// 7. 轨道控制器（选做研究1）：左键拖拽旋转、右键平移、滚轮缩放
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;            // 阻尼：松手后平滑减速
+controls.dampingFactor = 0.08;
+controls.minDistance = 4;                 // 最近缩放到太阳附近
+controls.maxDistance = 40;                // 最远不飞出星空
+
+// 8. 动画循环：内行星转得快、外行星转得慢；行星自转；太阳缓慢自转
 function animate() {
   requestAnimationFrame(animate);
+  planets.forEach(p => {
+    p.pivot.rotation.y += p.speed * 0.01; // 公转：转枢轴组
+    p.mesh.rotation.y += 0.02;            // 自转：转行星本身
+  });
+  sun.rotation.y += 0.003;
+  controls.update();                      // 开了阻尼必须每帧update
   renderer.render(scene, camera);
 }
 animate();
 
-// 8. 窗口resize适配：更新宽高比+画布尺寸
+// 9. 窗口resize适配：更新宽高比+画布尺寸
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
