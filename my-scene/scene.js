@@ -104,6 +104,7 @@ function animate() {
   });
   sun.rotation.y += 0.003;
   controls.update();                      // 开了阻尼必须每帧update
+  updateLabel();                          // 标签跟随行星位置
   renderer.render(scene, camera);
 }
 animate();
@@ -114,3 +115,50 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// 10. 选做研究2：Raycaster 点击行星变色高亮并显示标签
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const pickables = [sun].concat(planets.map(p => p.mesh)); // 太阳和行星可点
+let selected = null;
+const labelEl = document.querySelector('#label');
+
+function clearHighlight() {
+  if (selected && selected.material.emissive) {
+    selected.material.emissive.setHex(0x000000); // Standard材质：取消自发光
+  }
+  selected = null;
+  labelEl.style.display = 'none';
+}
+
+window.addEventListener('click', (e) => {
+  // 屏幕坐标 → NDC 标准设备坐标（-1~1）
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);               // 从相机发出一条射线
+  const hits = raycaster.intersectObjects(pickables, false); // 求交，按距离排序
+  clearHighlight();
+  if (hits.length > 0) {
+    selected = hits[0].object;
+    if (selected.material.emissive) {
+      selected.material.emissive.setHex(0xffaa00);        // 受光材质：自发光高亮
+    }
+    labelEl.textContent = selected.userData.name;
+    labelEl.style.display = 'block';
+    labelEl.dataset.x = hits[0].point.x;                  // 暂存命中点，循环里投影
+    labelEl.dataset.y = hits[0].point.y;
+    labelEl.dataset.z = hits[0].point.z;
+  }
+});
+
+// 标签跟随：3D命中点每帧投影成屏幕坐标
+const tmpV = new THREE.Vector3();
+function updateLabel() {
+  if (!selected) return;
+  tmpV.set(Number(labelEl.dataset.x), Number(labelEl.dataset.y), Number(labelEl.dataset.z));
+  // 行星在公转，直接取行星当前世界坐标更稳
+  selected.getWorldPosition(tmpV);
+  tmpV.project(camera);
+  labelEl.style.left = ((tmpV.x + 1) / 2 * window.innerWidth) + 'px';
+  labelEl.style.top = ((-tmpV.y + 1) / 2 * window.innerHeight) + 'px';
+}
