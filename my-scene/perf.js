@@ -1,18 +1,16 @@
-// perf.js —— 选做研究3：antialias开关与物体数量对帧率的影响
-// 三组：A=100物体+抗锯齿开  B=3000物体+抗锯齿开  C=3000物体+抗锯齿关
 const CASES = [
   { name: 'A', count: 100,  aa: true,  label: '100物体 · antialias开' },
   { name: 'B', count: 3000, aa: true,  label: '3000物体 · antialias开' },
   { name: 'C', count: 3000, aa: false, label: '3000物体 · antialias关' }
 ];
-const DURATION = 4000;   // 每组测量4秒
-const WARMUP = 500;      // 前0.5秒预热不计入
+const DURATION = 4000;
+const WARMUP = 500;
 
 let running = false;
 
 async function runOne(c) {
   const stage = document.querySelector('#stage');
-  stage.innerHTML = '';  // 清掉上一组的canvas
+  stage.innerHTML = '';
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0f1420);
@@ -30,13 +28,11 @@ async function runOne(c) {
   scene.add(dl);
 
   const geo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-  // 共享6个材质（3000个独立Mesh仍产生3000次draw call，但材质创建不耗时）
   const sharedMats = [0x4fc3f7, 0xffb74d, 0xef5350, 0x81c784, 0xba68c8, 0xffd54f]
     .map(col => new THREE.MeshStandardMaterial({ color: col }));
   const group = new THREE.Group();
   for (let i = 0; i < c.count; i++) {
     const m = new THREE.Mesh(geo, sharedMats[i % sharedMats.length]);
-    // 均匀撒在一个立方区域内
     m.position.set(
       (Math.random() - 0.5) * 18,
       (Math.random() - 0.5) * 12,
@@ -47,8 +43,6 @@ async function runOne(c) {
   }
   scene.add(group);
 
-  // —— 测量段：统计 FPS + 单次render()平均耗时(ms) + draw calls ——
-  // renderMs 直接包住 renderer.render 计时，即使显示器60帧封顶，CPU提交开销仍可测出差异
   const result = await new Promise(resolve => {
     const start = performance.now();
     let frames = 0, renderTotal = 0;
@@ -96,7 +90,6 @@ async function runAll() {
   }
   document.querySelector('#status').textContent = '实验完成';
 
-  // 结论按本次实测数据动态生成
   const A = results.A, B = results.B, C = results.C;
   const ratioMs = (B.renderMs / A.renderMs).toFixed(1);
   const ratioCalls = (B.calls / A.calls).toFixed(1);
