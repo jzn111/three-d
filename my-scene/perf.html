@@ -19,20 +19,21 @@
   <h2>选做研究3：性能对比实验</h2>
   <p>
     实验变量：① 物体数量（100 / 3000 个立方体）；② 抗锯齿 antialias（开 / 关）。
-    每组运行 4 秒，统计平均帧率 FPS 与绘制调用次数 draw calls。
+    每组运行 4 秒，统计平均帧率 FPS、单次 render() 平均耗时（毫秒）与绘制调用次数 draw calls。
     场景为 3000 个独立 Mesh（每个独立提交绘制），用于放大数量差异。
+    说明：普通显示器刷新率通常把 FPS 封顶在 60，此时以"单帧渲染耗时"和 draw calls 作为主要观察指标。
   </p>
   <button id="run-all">运行全部对比（约12秒）</button>
   <div id="status">尚未运行</div>
   <div id="stage"></div>
   <table>
     <thead>
-      <tr><th>组别</th><th>物体数量</th><th>antialias</th><th>平均FPS</th><th>draw calls</th></tr>
+      <tr><th>组别</th><th>物体数量</th><th>antialias</th><th>平均FPS</th><th>单帧渲染耗时(ms)</th><th>draw calls</th></tr>
     </thead>
     <tbody id="result"></tbody>
   </table>
   <p id="conclusion"></p>
   <script src="../libs/three.min.js?v=3"></script>
-  <script src="perf.js?v=3"></script>
+  <script src="perf.js?v=5"></script>
 </body>
 </html>
