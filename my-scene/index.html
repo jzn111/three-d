@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>太阳系 · 自主实践</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; }
+    #tip {
+      position: fixed; left: 12px; top: 12px; z-index: 10;
+      color: #cfe8ff; font: 14px/1.6 "Microsoft YaHei", sans-serif;
+      background: rgba(10, 20, 40, .55); padding: 8px 12px; border-radius: 6px;
+      pointer-events: none;
+    }
+    #label {
+      position: fixed; display: none; z-index: 10;
+      color: #fff; font: bold 14px/1.5 "Microsoft YaHei", sans-serif;
+      background: rgba(20, 40, 80, .85); padding: 4px 10px; border-radius: 4px;
+      pointer-events: none; transform: translate(12px, 12px);
+    }
+  </style>
+</head>
+<body>
+  <div id="tip">太阳系三维场景 ｜ 鼠标左键拖拽旋转 · 右键平移 · 滚轮缩放 ｜ 点击行星查看名称</div>
+  <div id="label"></div>
+  <script src="../libs/three.min.js"></script>
+  <script src="../libs/OrbitControls.js"></script>
+  <script src="scene.js"></script>
+</body>
+</html>
