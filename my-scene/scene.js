@@ -88,35 +88,7 @@ planetData.forEach(d => {
   scene.add(orbitLine);
 });
 
-// 7. 轨道控制器（选做研究1）：左键拖拽旋转、右键平移、滚轮缩放
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;            // 阻尼：松手后平滑减速
-controls.dampingFactor = 0.08;
-controls.minDistance = 4;                 // 最近缩放到太阳附近
-controls.maxDistance = 40;                // 最远不飞出星空
-
-// 8. 动画循环：内行星转得快、外行星转得慢；行星自转；太阳缓慢自转
-function animate() {
-  requestAnimationFrame(animate);
-  planets.forEach(p => {
-    p.pivot.rotation.y += p.speed * 0.01; // 公转：转枢轴组
-    p.mesh.rotation.y += 0.02;            // 自转：转行星本身
-  });
-  sun.rotation.y += 0.003;
-  controls.update();                      // 开了阻尼必须每帧update
-  updateLabel();                          // 标签跟随行星位置
-  renderer.render(scene, camera);
-}
-animate();
-
-// 9. 窗口resize适配：更新宽高比+画布尺寸
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// 10. 选做研究2：Raycaster 点击行星变色高亮并显示标签
+// 7. 选做研究2：Raycaster 点击行星变色高亮并显示标签（须在动画循环启动前声明）
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const pickables = [sun].concat(planets.map(p => p.mesh)); // 太阳和行星可点
@@ -145,20 +117,43 @@ window.addEventListener('click', (e) => {
     }
     labelEl.textContent = selected.userData.name;
     labelEl.style.display = 'block';
-    labelEl.dataset.x = hits[0].point.x;                  // 暂存命中点，循环里投影
-    labelEl.dataset.y = hits[0].point.y;
-    labelEl.dataset.z = hits[0].point.z;
   }
 });
 
-// 标签跟随：3D命中点每帧投影成屏幕坐标
+// 标签跟随：把行星当前3D世界坐标每帧投影成屏幕坐标
 const tmpV = new THREE.Vector3();
 function updateLabel() {
   if (!selected) return;
-  tmpV.set(Number(labelEl.dataset.x), Number(labelEl.dataset.y), Number(labelEl.dataset.z));
-  // 行星在公转，直接取行星当前世界坐标更稳
   selected.getWorldPosition(tmpV);
   tmpV.project(camera);
-  labelEl.style.left = ((tmpV.x + 1) / 2 * window.innerWidth) + 'px';
-  labelEl.style.top = ((-tmpV.y + 1) / 2 * window.innerHeight) + 'px';
+  labelEl.style.left = (((tmpV.x + 1) / 2) * window.innerWidth) + 'px';
+  labelEl.style.top = (((-tmpV.y + 1) / 2) * window.innerHeight) + 'px';
 }
+
+// 8. 轨道控制器（选做研究1）：左键拖拽旋转、右键平移、滚轮缩放
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;            // 阻尼：松手后平滑减速
+controls.dampingFactor = 0.08;
+controls.minDistance = 4;                 // 最近缩放到太阳附近
+controls.maxDistance = 40;                // 最远不飞出星空
+
+// 9. 动画循环：内行星转得快、外行星转得慢；行星自转；太阳缓慢自转
+function animate() {
+  requestAnimationFrame(animate);
+  planets.forEach(p => {
+    p.pivot.rotation.y += p.speed * 0.01; // 公转：转枢轴组
+    p.mesh.rotation.y += 0.02;            // 自转：转行星本身
+  });
+  sun.rotation.y += 0.003;
+  controls.update();                      // 开了阻尼必须每帧update
+  updateLabel();                          // 标签跟随行星位置
+  renderer.render(scene, camera);
+}
+animate();
+
+// 10. 窗口resize适配：更新宽高比+画布尺寸
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});

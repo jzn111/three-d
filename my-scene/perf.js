@@ -30,11 +30,12 @@ async function runOne(c) {
   scene.add(dl);
 
   const geo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+  // 共享6个材质（3000个独立Mesh仍产生3000次draw call，但材质创建不耗时）
+  const sharedMats = [0x4fc3f7, 0xffb74d, 0xef5350, 0x81c784, 0xba68c8, 0xffd54f]
+    .map(col => new THREE.MeshStandardMaterial({ color: col }));
   const group = new THREE.Group();
   for (let i = 0; i < c.count; i++) {
-    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-      color: new THREE.Color(Math.random(), Math.random(), Math.random())
-    }));
+    const m = new THREE.Mesh(geo, sharedMats[i % sharedMats.length]);
     // 均匀撒在一个立方区域内
     m.position.set(
       (Math.random() - 0.5) * 18,
